@@ -1,15 +1,13 @@
 {
-  "name": "banyan",
+  "name": "banyan-plugins",
   "owner": {
-    "name": "Vamitra",
-    "url": "https://banyan.vamitra.com"
+    "name": "Vamitra"
   },
   "plugins": [
     {
       "name": "banyan",
-      "description": "Collaborative knowledge graph for teams and AI agents. 53 MCP tools, auto-capture hooks.",
-      "version": "1.2.0",
-      "homepage": "https://banyan.vamitra.com"
+      "source": "./",
+      "description": "Collaborative knowledge graph for teams and AI agents. 53 MCP tools, auto-capture hooks."
     }
   ]
 }
