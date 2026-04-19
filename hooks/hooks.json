@@ -1,0 +1,25 @@
+{
+  "description": "Banyan auto-capture hooks for Claude Code",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/banyan-save-hook.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/banyan-precompact-hook.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "banyan",
+  "version": "1.0.0",
+  "description": "Collaborative knowledge graph for teams and AI agents. 37 MCP tools, auto-capture hooks, and guided onboarding.",
+  "author": {
+    "name": "banyan"
+  },
+  "license": "proprietary",
+  "commands": [],
+  "mcpServers": {
+    "banyan": {
+      "type": "url",
+      "url": "https://mcp.banyan.sh/mcp"
+    }
+  },
+  "keywords": [
+    "knowledge-graph",
+    "collaboration",
+    "ai-agents",
+    "mcp",
+    "team-knowledge"
+  ],
+  "repository": "https://github.com/badriram/banyan-plugin"
+}
