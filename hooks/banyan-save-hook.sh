@@ -107,7 +107,7 @@ if [ "$SINCE_LAST" -ge "$SAVE_INTERVAL" ] && [ "$EXCHANGE_COUNT" -gt 0 ]; then
     cat << 'HOOKJSON'
 {
   "decision": "block",
-  "reason": "Banyan session checkpoint. Save a session handoff leaf to your role branch on the active trunk. Convention: each trunk has a branch per role (e.g. 'code-builder'). If the branch doesn't exist, create it with banyan_grow_branch. Then call banyan_add_leaf on that branch with a summary of key decisions, findings, what shipped, and what's next. This is for the next Claude session's continuity, not for human review. Keep it structured and concise. Then continue your work."
+  "reason": "Banyan session checkpoint. Call banyan_checkin with the handoff parameter to pass context to the next session. Include: what shipped, what's in progress, what's blocked, and what the next session should do first. Example: banyan_checkin({ agent_id: 'code-builder', handoff: 'Shipped X. Next: Y. Blocked on Z.' }). Keep it concise. Then continue your work."
 }
 HOOKJSON
 else
