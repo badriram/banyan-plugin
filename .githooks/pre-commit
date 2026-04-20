@@ -1,0 +1,32 @@
+#!/bin/bash
+# Auto-bump patch version in plugin.json on every commit
+
+PLUGIN_JSON=".claude-plugin/plugin.json"
+
+if [ ! -f "$PLUGIN_JSON" ]; then
+  exit 0
+fi
+
+# Only bump if other files besides plugin.json are staged
+STAGED=$(git diff --cached --name-only | grep -v "$PLUGIN_JSON" | head -1)
+if [ -z "$STAGED" ]; then
+  exit 0  # Only plugin.json changed — don't recurse
+fi
+
+# Extract current version and bump patch
+CURRENT=$(python3 -c "import json; print(json.load(open('$PLUGIN_JSON'))['version'])")
+NEW=$(python3 -c "
+v = '$CURRENT'.split('.')
+v[2] = str(int(v[2]) + 1)
+print('.'.join(v))
+")
+
+# Update plugin.json
+python3 -c "
+import json
+with open('$PLUGIN_JSON') as f: d = json.load(f)
+d['version'] = '$NEW'
+with open('$PLUGIN_JSON', 'w') as f: json.dump(d, f, indent=2)
+" && echo "  Plugin version: $CURRENT -> $NEW"
+
+git add "$PLUGIN_JSON"
