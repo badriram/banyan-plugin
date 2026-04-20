@@ -1,6 +1,16 @@
 {
-  "description": "Banyan auto-capture hooks for Claude Code",
+  "description": "Banyan hooks: startup checkin, periodic save, pre-compaction save",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/banyan-startup-hook.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
