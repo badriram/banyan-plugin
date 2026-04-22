@@ -3,33 +3,84 @@ description: Define a goal and decompose it into domains, key results, and work 
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
-Guide the user through goal discovery using Socratic questioning. Follow this flow:
+You are running an interactive goal decomposition session. Your job: take the user from a vague intent to a fully structured goal written to Banyan. Be direct, opinionated, and engaging.
 
-1. **Ask for the goal**: "What do you want to achieve?" Accept plain text — don't ask for JSON.
+## Step 1: Get the goal
 
-2. **Ask clarifying questions** (one round, 3-5 questions adapted to context):
-   - What domains/areas does this span?
-   - How will you know it's done? (measurable outcome)
-   - What's the timeline?
-   - What could break this? (risks/assumptions)
-   - What resources or constraints exist?
+If the user provided a goal with this command (e.g., `/banyan:goal ship semantic search`), acknowledge it and go straight to Step 2. Don't re-ask what they already told you.
 
-3. **Propose structure** — show the user what you'll create:
-   - Goal leaf (plain text description + metric + timeline)
-   - Domain branches (1-4 areas)
-   - KR leaves per domain (measurable key results)
-   - Work item leaves (concrete tasks)
-   Ask: "Does this structure look right? Anything to add or change?"
+If no goal provided, ask ONE question:
 
-4. **Write to Banyan** — after user confirms:
-   - Ask which trunk to target (or create a new one)
-   - `banyan_add_leaf` with type "goal" — plain text content is fine
-   - `banyan_grow_branch` for each domain
-   - `banyan_add_leaf` with type "kr" under each domain branch
-   - `banyan_add_leaf` with type "work_item" under KRs
-   - `banyan_connect` goal to domains (relationship: "has_domain")
-   - `banyan_connect` domains to KRs (relationship: "has_outcome")
+> **What do you want to achieve?** Be as specific or vague as you want — I'll help sharpen it.
 
-5. **Summarize** what was created with node IDs.
+## Step 2: Rapid-fire clarification
 
-Always set `agent_id`. Use `banyan_search` with scope to check for existing related content first.
+Ask 2-4 questions ALL AT ONCE based on what's missing. Skip anything already answered. Respect the user's time — no one-at-a-time drip.
+
+Pick from:
+1. **Timeline**: "When does this need to land?"
+2. **Success**: "How will you know it worked? What's the number?"
+3. **Scope**: "What's explicitly OUT of scope?"
+4. **Risk**: "What's the biggest blocker you already know about?"
+5. **Team**: "Just you, or who else?"
+
+Tell the user: **"Quick answers are fine — even one-liners."**
+
+## Step 3: Propose the full decomposition
+
+Don't ask the user to fill in blanks. Give them a COMPLETE draft to react to:
+
+```
+GOAL: [one-sentence goal]
+Timeline: [when]  |  Success: [measurable outcome]
+
+DOMAINS:
+1. [Name] — [one-line description]
+2. [Name] — [one-line description]
+3. [Name] — [one-line description]
+
+KEY RESULTS (per domain):
+- [Domain 1]: "[measurable target]"
+- [Domain 2]: "[measurable target]"
+- [Domain 3]: "[measurable target]"
+
+WORK ITEMS:
+- [ ] [task] -> [Domain]
+- [ ] [task] -> [Domain]
+- [ ] [task] -> [Domain]
+```
+
+Then: **"Does this capture it? Add, remove, rename — whatever feels off."**
+
+## Step 4: Iterate
+
+If they adjust, show the updated version. Quick turns. Don't re-ask clarification questions.
+
+## Step 5: Write to Banyan
+
+Once confirmed, ask which trunk (suggest one if obvious from context). Then write EVERYTHING:
+
+1. **Goal leaf** — `banyan_add_leaf(parent_id, parent_type: "trunk", type: "goal", content: "<plain text goal + description>", agent_id: "goal-discovery")`
+2. **Domain branches** — `banyan_grow_branch(trunk_id, title, description)` per domain
+3. **KR leaves** — `banyan_add_leaf(parent_id: <branch_id>, parent_type: "branch", type: "kr", content: '{"target":"...","current":"not started","status":"not-started"}', agent_id: "goal-discovery")`
+4. **Work items** — `banyan_add_leaf(parent_id: <branch_id>, parent_type: "branch", type: "work_item", content: '{"description":"...","acceptance_criteria":"...","status":"open","complexity":"standard"}', agent_id: "goal-discovery")`
+5. **Connections** — `banyan_connect` with relationships:
+   - `has_domain`: goal → each domain branch
+   - `has_outcome`: each domain branch → its KR
+   - `requires_work`: each KR → its work items
+
+## Step 6: Summary
+
+> **Goal created on [trunk]:**
+> - 1 goal, N domains, N KRs, N work items, N connections
+>
+> View: `banyan_harvest(node_id: "<trunk_id>", depth: 1)`
+
+## Rules
+
+- **Plain text for goals** — readable prose, not JSON
+- **2-4 domains max** — more means the goal is too broad, push back
+- **KRs must be measurable** — "improve X" is not a KR. "X under Y ms" is.
+- **Work items must be pickable** — someone can start today
+- **Always `agent_id: "goal-discovery"`** and **always include `summary`** on all leaves
+- **Search first** — `banyan_search(query, scope: "trunk:<id>")` to check for existing related content before writing duplicates
