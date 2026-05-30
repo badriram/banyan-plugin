@@ -1,15 +1,24 @@
 #!/bin/bash
-# BANYAN SAVE HOOK — Auto-capture every N exchanges
+# BANYAN SAVE HOOK — Periodic diary-entry prompt
 #
 # Claude Code "Stop" hook. After every assistant response:
 # 1. Counts human messages in the session transcript
 # 2. Every SAVE_INTERVAL messages, BLOCKS the AI
-# 3. Returns a reason telling the AI to call banyan_capture
-# 4. AI captures key insights as inbox drafts for human review
-# 5. Next Stop fires with stop_hook_active=true → lets AI stop normally
+# 3. Returns a reason telling the AI to call banyan_checkin with a
+#    `diary_entry` — an APPEND-ONLY, per-(user, agent_id, trunk_id)
+#    note that survives across sessions. NOT `handoff` (that's the
+#    single-string, overwriteable, end-of-session-only summary).
+#    Diary entries accumulate; the next session's startup hook
+#    surfaces them automatically via session_start:true.
+# 4. Next Stop fires with stop_hook_active=true → lets AI stop normally
 #
-# Unlike MemPalace (which auto-ingests everything), Banyan creates captures
-# that go to your inbox for review. Deliberate authorship is preserved.
+# Why diary, not handoff: handoff is one string per session that gets
+# overwritten on every save. A long session with 10-20 save fires
+# trampled its own handoff — only the last write survived. Diary
+# entries are append-only and timestamped; nothing is ever lost.
+#
+# Unlike MemPalace (which auto-ingests everything), Banyan creates
+# entries you author yourself. Deliberate authorship is preserved.
 #
 # Adapted from MemPalace's mempal_save_hook.sh (MIT License, 2026 MemPalace Contributors)
 #
@@ -107,7 +116,7 @@ if [ "$SINCE_LAST" -ge "$SAVE_INTERVAL" ] && [ "$EXCHANGE_COUNT" -gt 0 ]; then
     cat << 'HOOKJSON'
 {
   "decision": "block",
-  "reason": "Banyan session checkpoint. Call banyan_checkin with the handoff parameter to pass context to the next session. Include: what shipped, what's in progress, what's blocked, and what the next session should do first. Example: banyan_checkin({ agent_id: 'code-builder', handoff: 'Shipped X. Next: Y. Blocked on Z.' }). Keep it concise. Then continue your work."
+  "reason": "Banyan diary checkpoint. Call banyan_checkin with agent_id + trunk_id + diary_entry capturing ONE specific moment from the last ~30 exchanges: a decision, a blocker, a step completed, a hypothesis worth remembering. ≤4KB (server rejects oversize, doesn't truncate). Append-only — accumulates across sessions and resurfaces on next session_start. Pass the SAME trunk_id you've been working on (diary is scoped to your (user, agent_id, trunk_id) cell — omitting trunk_id means no diary write). Do NOT pass handoff here (that's reserved for PreCompact / end-of-session). Example: banyan_checkin({ agent_id: 'code-builder', trunk_id: '<your-current-trunk>', diary_entry: 'Resolved EXDATE TZ collision by scoping normalization to recurrence path only — calendar leaves keep floating tz.' }). Then continue your work."
 }
 HOOKJSON
 else
